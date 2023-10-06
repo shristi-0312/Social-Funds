@@ -2,6 +2,7 @@ const fs = require('fs');
 const axios = require('axios');
 const pdf = require('pdfjs-dist');
 const express = require('express');
+const request = require('request');
 const app = express();
 const PORT = process.env.PORT || 3030;
 
@@ -36,11 +37,49 @@ app.get('/extract-words', async (req, res) => {
 
   try {
     const words = await extractWordsFromPDF(pdfUrl);
+
+    const aiReply = '';
+
+    // request(options, function (error, response, body) {
+    //   if (error) throw new Error(error);
+    
+    //   // console.log(body);
+    //   res.json({ body });
+    // });
+
     res.json({ words });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while processing the PDF' });
   }
 });
+
+const options = {
+  method: 'POST',
+  url: 'https://api.openai.com/v1/chat/completions',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer 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'
+  },
+  body: {
+    model: 'gpt-3.5-turbo',
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant.' },
+      { role: 'user', content: 'Hello!' }
+    ],
+    temperature: 1,
+    max_tokens: 50,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0
+  },
+  json: true
+};
+
+// request(options, function (error, response, body) {
+//   if (error) throw new Error(error);
+
+//   console.log(body);
+// });
 
 app.listen(PORT, () => {
   console.log(`API server is running on port ${PORT}`);
