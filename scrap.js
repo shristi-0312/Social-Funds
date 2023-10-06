@@ -1,6 +1,9 @@
 const fs = require('fs');
 const axios = require('axios');
 const pdf = require('pdfjs-dist');
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3030;
 
 async function extractWordsFromPDF(pdfUrl) {
   try {
@@ -25,11 +28,20 @@ async function extractWordsFromPDF(pdfUrl) {
   }
 }
 
-const pdfUrl = 'https://www.africau.edu/images/default/sample.pdf';
-extractWordsFromPDF(pdfUrl)
-  .then(words => {
-    console.log(words);
-  })
-  .catch(err => {
-    console.error(err.message);
-  });
+app.get('/extract-words', async (req, res) => {
+  const pdfUrl = req.query.pdfUrl;
+  if (!pdfUrl) {
+    return res.status(400).json({ error: 'Missing pdfUrl query parameter' });
+  }
+
+  try {
+    const words = await extractWordsFromPDF(pdfUrl);
+    res.json({ words });
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while processing the PDF' });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`API server is running on port ${PORT}`);
+});
